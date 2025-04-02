@@ -14,6 +14,7 @@ angle = 0
 X_OFFSET = WIDTH // 2
 Y_OFFSET = HEIGHT // 2
 SCALE = 100
+PROJECTION_MATRIX = np.matrix([[1, 0, 0], [0, 1, 0]])
 
 init()
 
@@ -22,9 +23,27 @@ display.set_caption("Simple Pygame 3D Projection")
 
 points = []
 points.append(np.matrix([-1, -1, 1]))
-points.append(np.matrix([-1, 1, 1]))
 points.append(np.matrix([1, -1, 1]))
 points.append(np.matrix([1, 1, 1]))
+points.append(np.matrix([-1, 1, 1]))
+
+points.append(np.matrix([-1, -1, -1]))
+points.append(np.matrix([1, -1, -1]))
+points.append(np.matrix([1, 1, -1]))
+points.append(np.matrix([-1, 1, -1]))
+
+projected_points = [[0, 0] for _ in range(len(points))]
+
+
+def connect_points(point1: int, point2: int, projected_points: list):
+    draw.line(
+        screen,
+        RED,
+        projected_points[point1],
+        projected_points[point2],
+        1,
+    )
+
 
 clock = Clock()
 while is_running:
@@ -50,18 +69,27 @@ while is_running:
     angle += 0.01
 
     # Draw the points
-    for point in points:
+    for index, point in enumerate(points):
         rotated_point = (
             rotation_matrix_x
             * rotation_matrix_y
             * rotation_matrix_z
             * point.reshape(3, 1)
         )
+        projected_point = PROJECTION_MATRIX * rotated_point
 
-        x = int(rotated_point[0, 0] * SCALE) + X_OFFSET
-        y = int(rotated_point[1, 0] * SCALE) + Y_OFFSET
+        x = int(projected_point[0, 0] * SCALE) + X_OFFSET
+        y = int(projected_point[1, 0] * SCALE) + Y_OFFSET
+
+        # update the projected points list
+        projected_points[index] = (x, y)
 
         draw.circle(screen, RED, (x, y), 5)
+
+    for point_index in range(4):
+        connect_points(point_index, (point_index + 1) % 4, projected_points)
+        connect_points(point_index + 4, ((point_index + 1) % 4) + 4, projected_points)
+        connect_points(point_index, (point_index + 4), projected_points)
 
     # update the full display Surface to the screen
     display.flip()
