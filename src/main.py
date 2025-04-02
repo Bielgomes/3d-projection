@@ -41,11 +41,22 @@ while is_running:
     rotation_matrix_x = np.matrix(
         [[1, 0, 0], [0, cos(angle), -sin(angle)], [0, sin(angle), cos(angle)]]
     )
+    rotation_matrix_y = np.matrix(
+        [[cos(angle), 0, sin(angle)], [0, 1, 0], [-sin(angle), 0, cos(angle)]]
+    )
+    rotation_matrix_z = np.matrix(
+        [[cos(angle), -sin(angle), 0], [sin(angle), cos(angle), 0], [0, 0, 1]]
+    )
     angle += 0.01
 
     # Draw the points
     for point in points:
-        rotated_point = rotation_matrix_x * point.reshape(3, 1)
+        rotated_point = (
+            rotation_matrix_x
+            * rotation_matrix_y
+            * rotation_matrix_z
+            * point.reshape(3, 1)
+        )
 
         x = int(rotated_point[0, 0] * SCALE) + X_OFFSET
         y = int(rotated_point[1, 0] * SCALE) + Y_OFFSET
